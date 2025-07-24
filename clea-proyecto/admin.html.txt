@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CLEA - Panel de Administración</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f3f4f6; /* Gray-100 */
+        }
+        .admin-sidebar-link.active {
+            background-color: #111827; /* Gray-900 */
+            color: white;
+        }
+        .modal-backdrop {
+            background-color: rgba(0, 0, 0, 0.6);
+        }
+    </style>
+</head>
+<body class="text-black">
+
+<div class="flex h-screen bg-gray-100">
+    <!-- Sidebar -->
+    <aside class="w-64 bg-gray-800 text-white flex flex-col">
+        <div class="p-6 text-center border-b border-gray-700">
+            <h1 class="text-3xl font-bold">CLEA</h1>
+            <p class="text-sm text-gray-400">Admin</p>
+        </div>
+        <nav id="admin-nav" class="flex-grow p-4">
+            <a href="#" data-view="dashboard" class="admin-sidebar-link flex items-center py-3 px-4 rounded-lg font-semibold hover:bg-gray-700">
+                <span class="mr-3">📊</span> Dashboard
+            </a>
+            <a href="#" data-view="courses" class="admin-sidebar-link flex items-center py-3 px-4 rounded-lg font-semibold mt-2">
+                <span class="mr-3">📚</span> Cursos
+            </a>
+            <a href="#" data-view="users" class="admin-sidebar-link flex items-center py-3 px-4 rounded-lg font-semibold mt-2">
+                <span class="mr-3">👥</span> Usuarios
+            </a>
+            <a href="#" data-view="subscriptions" class="admin-sidebar-link flex items-center py-3 px-4 rounded-lg font-semibold mt-2">
+                <span class="mr-3">💰</span> Suscripciones
+            </a>
+        </nav>
+        <div class="p-4 border-t border-gray-700">
+             <button id="logout-btn" class="w-full text-left flex items-center py-3 px-4 rounded-lg font-semibold hover:bg-gray-700">
+                <span class="mr-3">🚪</span> Cerrar Sesión
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col overflow-hidden">
+        <!-- Header -->
+        <header class="bg-white shadow-md">
+            <div class="flex justify-between items-center p-4">
+                <h2 id="main-header-title" class="text-2xl font-bold">Dashboard</h2>
+                <div id="user-info" class="flex items-center space-x-4">
+                    <span id="user-email" class="text-black text-sm hidden md:block">admin@clea.com</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Content Area -->
+        <main id="main-content" class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-8">
+            <!-- Views will be injected here -->
+        </main>
+    </div>
+</div>
+
+<!-- Add/Edit Course Modal -->
+<div id="course-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop">
+    <div class="bg-white rounded-lg shadow-2xl w-full max-w-2xl flex flex-col">
+        <div class="flex justify-between items-center p-4 border-b">
+            <h3 id="course-modal-title" class="text-lg font-bold">Añadir Nuevo Curso</h3>
+            <button id="close-course-modal" class="text-gray-500 hover:text-black text-2xl">&times;</button>
+        </div>
+        <div class="p-6">
+            <form id="course-form">
+                <div class="mb-4">
+                    <label for="course-name" class="block font-semibold mb-1">Nombre del Curso</label>
+                    <input type="text" id="course-name" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black" required>
+                </div>
+                <div class="mb-4">
+                    <label for="course-category" class="block font-semibold mb-1">Categoría</label>
+                    <select id="course-category" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black" required>
+                        <option value="matematicas">Matemáticas</option>
+                        <option value="lectura">Lectura Crítica</option>
+                        <option value="ciencias">Ciencias Naturales</option>
+                        <option value="sociales">Sociales y Ciudadanas</option>
+                        <option value="ingles">Inglés</option>
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label for="course-description" class="block font-semibold mb-1">Descripción</label>
+                    <textarea id="course-description" rows="4" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"></textarea>
+                </div>
+                <div class="flex justify-end">
+                    <button type="submit" class="bg-black text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-800 transition-colors">Guardar Curso</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit User Modal -->
+<div id="user-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop">
+    <div class="bg-white rounded-lg shadow-2xl w-full max-w-lg flex flex-col">
+        <div class="flex justify-between items-center p-4 border-b">
+            <h3 id="user-modal-title" class="text-lg font-bold">Editar Usuario</h3>
+            <button id="close-user-modal" class="text-gray-500 hover:text-black text-2xl">&times;</button>
+        </div>
+        <div class="p-6">
+            <form id="user-form">
+                <div class="mb-4">
+                    <label for="user-name" class="block font-semibold mb-1">Nombre</label>
+                    <input type="text" id="user-name" class="w-full px-4 py-2 bg-gray-100 border border-gray-300 rounded-md" readonly>
+                </div>
+                <div class="mb-4">
+                    <label for="user-email-field" class="block font-semibold mb-1">Correo Electrónico</label>
+                    <input type="email" id="user-email-field" class="w-full px-4 py-2 bg-gray-100 border border-gray-300 rounded-md" readonly>
+                </div>
+                <div class="mb-4">
+                    <label for="user-role" class="block font-semibold mb-1">Rol</label>
+                    <select id="user-role" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black" required>
+                        <option value="estudiante">Estudiante</option>
+                        <option value="tutor">Tutor</option>
+                        <option value="admin">Administrador</option>
+                    </select>
+                </div>
+                <div class="flex justify-end">
+                    <button type="submit" class="bg-black text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-800 transition-colors">Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signOut, onAuthStateChanged, signInWithCustomToken, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, collection, onSnapshot, addDoc, doc, getDoc, updateDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    // --- Firebase Configuration ---
+    const firebaseConfig = typeof __firebase_config !== 'undefined' 
+        ? JSON.parse(__firebase_config)
+        : {
+            apiKey: "AIzaSyXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+            authDomain: "your-project-id.firebaseapp.com",
+            projectId: "your-project-id",
+            storageBucket: "your-project-id.appspot.com",
+            messagingSenderId: "000000000000",
+            appId: "1:000000000000:web:000000000000000000"
+          };
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+
+    // --- Initialize Firebase ---
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // --- DOM Elements ---
+    const userEmailSpan = document.getElementById('user-email');
+    const logoutBtn = document.getElementById('logout-btn');
+    const mainContent = document.getElementById('main-content');
+    const mainHeaderTitle = document.getElementById('main-header-title');
+    const adminNav = document.getElementById('admin-nav');
+
+    let currentEditCourseId = null;
+    let currentEditUserId = null;
+
+    // --- Authentication ---
+    onAuthStateChanged(auth, user => {
+        if (user) {
+            userEmailSpan.textContent = user.email;
+            // In a real app, verify admin role here
+            switchView('dashboard'); // Default view
+        } else {
+            // Redirect to a login page if not authenticated
+            // For this demo, we'll just show a message.
+            mainContent.innerHTML = `<div class="text-center text-red-500 font-bold p-8">Debes iniciar sesión como administrador para acceder a esta página.</div>`;
+        }
+    });
+
+    logoutBtn.addEventListener('click', async () => {
+        try {
+            await signOut(auth);
+            window.location.href = '/index.html'; // Redirect to landing page
+        } catch (error) {
+            console.error("Error signing out:", error);
+        }
+    });
+
+    // --- View Switching Logic ---
+    adminNav.addEventListener('click', (e) => {
+        e.preventDefault();
+        const link = e.target.closest('a');
+        if (link) {
+            const view = link.dataset.view;
+            switchView(view);
+        }
+    });
+
+    function switchView(view) {
+        document.querySelectorAll('.admin-sidebar-link').forEach(l => l.classList.remove('active'));
+        document.querySelector(`.admin-sidebar-link[data-view="${view}"]`).classList.add('active');
+
+        mainContent.innerHTML = ''; // Clear content
+        switch (view) {
+            case 'dashboard':
+                mainHeaderTitle.textContent = 'Dashboard';
+                renderDashboard();
+                break;
+            case 'courses':
+                mainHeaderTitle.textContent = 'Gestión de Cursos';
+                renderCoursesView();
+                break;
+            case 'users':
+                mainHeaderTitle.textContent = 'Gestión de Usuarios';
+                renderUsersView();
+                break;
+            case 'subscriptions':
+                 mainHeaderTitle.textContent = 'Gestión de Suscripciones';
+                 renderSubscriptionsView();
+                 break;
+        }
+    }
+    
+    // --- Render Functions for each view ---
+    function renderDashboard() {
+        mainContent.innerHTML = `<div class="text-center text-gray-500">El Dashboard de estadísticas estará disponible próximamente.</div>`;
+    }
+    
+    function renderSubscriptionsView() {
+        mainContent.innerHTML = `<div class="flex justify-between items-center mb-8"><h3 class="text-xl font-bold">Todas las Suscripciones</h3></div><div class="bg-white p-6 rounded-lg shadow-lg"><div class="overflow-x-auto"><table class="min-w-full"><thead><tr class="border-b"><th class="text-left py-3 px-4 font-semibold text-gray-600">Usuario</th><th class="text-left py-3 px-4 font-semibold text-gray-600">Plan</th><th class="text-left py-3 px-4 font-semibold text-gray-600">Monto</th><th class="text-left py-3 px-4 font-semibold text-gray-600">Vencimiento</th><th class="text-left py-3 px-4 font-semibold text-gray-600">Estado</th><th class="text-left py-3 px-4 font-semibold text-gray-600">Acciones</th></tr></thead><tbody id="subscriptions-table-body"></tbody></table></div></div>`;
+        listenForSubscriptions();
+    }
+
+    function renderCoursesView() {
+        mainContent.innerHTML = `
+            <div class="flex justify-between items-center mb-8">
+                <h3 class="text-xl font-bold">Todos los Cursos</h3>
+                <button id="add-course-btn" class="bg-black text-white px-6 py-2 rounded-lg font-semibold hover:bg-gray-800 transition-colors">Añadir Nuevo Curso</button>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow-lg"><div class="overflow-x-auto"><table class="min-w-full">
+                <thead><tr class="border-b"><th class="text-left py-3 px-4 font-semibold text-gray-600">Nombre</th><th class="text-left py-3 px-4 font-semibold text-gray-600">Categoría</th><th class="text-left py-3 px-4 font-semibold text-gray-600">Lecciones</th><th class="text-left py-3 px-4 font-semibold text-gray-600">Estado</th><th class="text-left py-3 px-4 font-semibold text-gray-600">Acciones</th></tr></thead>
+                <tbody id="courses-table-body"></tbody>
+            </table></div></div>`;
+        listenForCourses();
+        document.getElementById('add-course-btn').addEventListener('click', () => openCourseModal('add'));
+    }
+
+    function renderUsersView() {
+        mainContent.innerHTML = `
+            <div class="flex justify-between items-center mb-8"><h3 class="text-xl font-bold">Todos los Usuarios</h3></div>
+            <div class="bg-white p-6 rounded-lg shadow-lg"><div class="overflow-x-auto"><table class="min-w-full">
+                <thead><tr class="border-b"><th class="text-left py-3 px-4 font-semibold text-gray-600">Nombre</th><th class="text-left py-3 px-4 font-semibold text-gray-600">Correo</th><th class="text-left py-3 px-4 font-semibold text-gray-600">Rol</th><th class="text-left py-3 px-4 font-semibold text-gray-600">Acciones</th></tr></thead>
+                <tbody id="users-table-body"></tbody>
+            </table></div></div>`;
+        listenForUsers();
+    }
+
+
+    // --- Firestore Listeners ---
+    function listenForCourses() {
+        const coursesTableBody = document.getElementById('courses-table-body');
+        const coursesRef = collection(db, `artifacts/${appId}/public/data/courses`);
+        onSnapshot(coursesRef, (snapshot) => {
+            if(!coursesTableBody) return;
+            coursesTableBody.innerHTML = '';
+            if (snapshot.empty) {
+                coursesTableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-gray-500">No hay cursos.</td></tr>';
+                return;
+            }
+            snapshot.forEach(doc => {
+                const course = doc.data();
+                const row = document.createElement('tr');
+                row.className = 'border-b hover:bg-gray-50';
+                row.innerHTML = `
+                    <td class="py-4 px-4 font-semibold">${course.name}</td><td class="py-4 px-4">${course.category}</td>
+                    <td class="py-4 px-4">${course.lessonCount || 0}</td><td class="py-4 px-4"><span class="bg-green-100 text-green-800 text-xs font-semibold px-2 py-1 rounded-full">Publicado</span></td>
+                    <td class="py-4 px-4">
+                        <button class="edit-course-btn text-sm font-semibold text-black hover:underline" data-id="${doc.id}">Editar</button>
+                        <button class="delete-course-btn text-sm font-semibold text-red-600 hover:underline ml-4" data-id="${doc.id}">Eliminar</button>
+                    </td>`;
+                coursesTableBody.appendChild(row);
+            });
+        });
+    }
+
+    function listenForUsers() {
+        const usersTableBody = document.getElementById('users-table-body');
+        const usersRef = collection(db, `artifacts/${appId}/public/data/users`); // Simplified path for demo
+        onSnapshot(usersRef, (snapshot) => {
+            if(!usersTableBody) return;
+            usersTableBody.innerHTML = '';
+            if (snapshot.empty) {
+                usersTableBody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-gray-500">No hay usuarios.</td></tr>';
+                return;
+            }
+            snapshot.forEach(doc => {
+                const user = doc.data();
+                const row = document.createElement('tr');
+                row.className = 'border-b hover:bg-gray-50';
+                const roleColors = { estudiante: 'bg-blue-100 text-blue-800', tutor: 'bg-purple-100 text-purple-800', admin: 'bg-yellow-100 text-yellow-800' };
+                row.innerHTML = `
+                    <td class="py-4 px-4 font-semibold">${user.nombre}</td><td class="py-4 px-4">${user.email}</td>
+                    <td class="py-4 px-4"><span class="${roleColors[user.rol] || ''} text-xs font-semibold px-2 py-1 rounded-full">${user.rol}</span></td>
+                    <td class="py-4 px-4">
+                        <button class="edit-user-btn text-sm font-semibold text-black hover:underline" data-id="${doc.id}">Editar</button>
+                        <button class="delete-user-btn text-sm font-semibold text-red-600 hover:underline ml-4" data-id="${doc.id}">Suspender</button>
+                    </td>`;
+                usersTableBody.appendChild(row);
+            });
+        });
+    }
+
+    function listenForSubscriptions() {
+        const subsTableBody = document.getElementById('subscriptions-table-body');
+        const subsRef = collection(db, `artifacts/${appId}/public/data/subscriptions`);
+        onSnapshot(subsRef, (snapshot) => {
+            if(!subsTableBody) return;
+            subsTableBody.innerHTML = '';
+            if (snapshot.empty) {
+                subsTableBody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-gray-500">No hay suscripciones.</td></tr>';
+                return;
+            }
+            snapshot.forEach(doc => {
+                const sub = doc.data();
+                const row = document.createElement('tr');
+                const isExpired = sub.endDate.toDate() < new Date();
+                row.className = 'border-b hover:bg-gray-50';
+                row.innerHTML = `
+                    <td class="py-4 px-4 font-semibold">${sub.userName}</td>
+                    <td class="py-4 px-4">${sub.planName}</td>
+                    <td class="py-4 px-4">$${sub.amount}</td>
+                    <td class="py-4 px-4">${sub.endDate.toDate().toLocaleDateString()}</td>
+                    <td class="py-4 px-4"><span class="${isExpired ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'} text-xs font-semibold px-2 py-1 rounded-full">${isExpired ? 'Vencida' : 'Activa'}</span></td>
+                    <td class="py-4 px-4"><button class="text-sm font-semibold text-black hover:underline">Ver Detalles</button></td>`;
+                subsTableBody.appendChild(row);
+            });
+        });
+    }
+
+    // --- Modal & Form Logic for Courses ---
+    const courseModal = document.getElementById('course-modal');
+    const closeCourseModalBtn = document.getElementById('close-course-modal');
+    const courseForm = document.getElementById('course-form');
+    const courseModalTitle = document.getElementById('course-modal-title');
+    
+    function openCourseModal(mode, courseId = null) {
+        currentEditCourseId = courseId;
+        courseForm.reset();
+        if (mode === 'edit') {
+            courseModalTitle.textContent = 'Editar Curso';
+            const courseRef = doc(db, `artifacts/${appId}/public/data/courses`, courseId);
+            getDoc(courseRef).then(docSnap => {
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    document.getElementById('course-name').value = data.name;
+                    document.getElementById('course-category').value = data.category;
+                    document.getElementById('course-description').value = data.description;
+                }
+            });
+        } else {
+            courseModalTitle.textContent = 'Añadir Nuevo Curso';
+        }
+        courseModal.classList.remove('hidden');
+    }
+    closeCourseModalBtn.addEventListener('click', () => courseModal.classList.add('hidden'));
+    courseModal.addEventListener('click', (e) => { if (e.target === courseModal) courseModal.classList.add('hidden'); });
+    courseForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const courseData = { name: document.getElementById('course-name').value, category: document.getElementById('course-category').value, description: document.getElementById('course-description').value };
+        try {
+            if (currentEditCourseId) {
+                const courseRef = doc(db, `artifacts/${appId}/public/data/courses`, currentEditCourseId);
+                await updateDoc(courseRef, courseData);
+            } else {
+                courseData.createdAt = serverTimestamp();
+                courseData.lessonCount = 0;
+                const coursesRef = collection(db, `artifacts/${appId}/public/data/courses`);
+                await addDoc(coursesRef, courseData);
+            }
+            courseModal.classList.add('hidden');
+        } catch (error) { console.error("Error saving course: ", error); }
+    });
+
+    // --- Modal & Form Logic for Users ---
+    const userModal = document.getElementById('user-modal');
+    const closeUserModalBtn = document.getElementById('close-user-modal');
+    const userForm = document.getElementById('user-form');
+    
+    function openUserModal(userId) {
+        currentEditUserId = userId;
+        userForm.reset();
+        const userRef = doc(db, `artifacts/${appId}/public/data/users`, userId);
+        getDoc(userRef).then(docSnap => {
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                document.getElementById('user-name').value = data.nombre;
+                document.getElementById('user-email-field').value = data.email;
+                document.getElementById('user-role').value = data.rol;
+            }
+        });
+        userModal.classList.remove('hidden');
+    }
+    closeUserModalBtn.addEventListener('click', () => userModal.classList.add('hidden'));
+    userModal.addEventListener('click', (e) => { if (e.target === userModal) userModal.classList.add('hidden'); });
+    userForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const newRole = document.getElementById('user-role').value;
+        try {
+            const userRef = doc(db, `artifacts/${appId}/public/data/users`, currentEditUserId);
+            await updateDoc(userRef, { rol: newRole });
+            userModal.classList.add('hidden');
+        } catch (error) { console.error("Error updating user role: ", error); }
+    });
+
+    // --- Event Delegation for Tables ---
+    mainContent.addEventListener('click', async (e) => {
+        const target = e.target;
+        const id = target.dataset.id;
+        if (target.classList.contains('edit-course-btn')) openCourseModal('edit', id);
+        if (target.classList.contains('delete-course-btn')) {
+            if (confirm('¿Seguro que quieres eliminar este curso?')) {
+                const courseRef = doc(db, `artifacts/${appId}/public/data/courses`, id);
+                await deleteDoc(courseRef).catch(err => console.error(err));
+            }
+        }
+        if (target.classList.contains('edit-user-btn')) openUserModal(id);
+        if (target.classList.contains('delete-user-btn')) {
+             if (confirm('¿Seguro que quieres suspender a este usuario?')) {
+                const userRef = doc(db, `artifacts/${appId}/public/data/users`, id);
+                await deleteDoc(userRef).catch(err => console.error(err));
+            }
+        }
+    });
+
+    // --- Initial Load ---
+    (async () => {
+        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+            try { await signInWithCustomToken(auth, __initial_auth_token); } 
+            catch (error) { if (!auth.currentUser) await signInAnonymously(auth); }
+        } else {
+             if (!auth.currentUser) await signInAnonymously(auth);
+        }
+    })();
+</script>
+</body>
+</html>

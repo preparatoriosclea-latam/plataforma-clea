@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CLEA - Plataforma Educativa</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Poppins', sans-serif; }
+        .hero-section {
+            background-image: linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.45)), url('https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2071&auto=format&fit=crop');
+            background-size: cover;
+            background-position: center;
+        }
+        .modal-backdrop { background-color: rgba(0, 0, 0, 0.6); }
+        .nav-button-primary { background-color: white; color: black; transition: all 0.3s; }
+        .nav-button-primary:hover { background-color: #f0f0f0; }
+        .form-button { background-color: #1F2937; color: white; transition: background-color 0.3s; }
+        .form-button:hover { background-color: #111827; }
+        .cta-button { background-color: #1F2937; color: white; transition: all 0.3s; }
+        .cta-button:hover { background-color: #111827; transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+    </style>
+</head>
+<body class="bg-white text-black">
+
+    <!-- Header -->
+    <header class="bg-black/90 backdrop-blur-md sticky top-0 z-40">
+        <nav class="container mx-auto px-6 py-3 flex justify-between items-center">
+            <h1 class="text-3xl font-bold text-white">CLEA</h1>
+            <div id="auth-links" class="flex items-center space-x-4">
+                <button id="signup-btn" class="text-white font-semibold hover:underline text-sm">Comienza ya</button>
+                <button id="login-btn" class="nav-button-primary px-4 py-2 rounded-md font-semibold text-sm">Iniciar Sesión</button>
+            </div>
+             <div id="user-info" class="hidden items-center space-x-4">
+                <a href="/app.html" class="text-white font-semibold hover:underline text-sm">Ir a la Plataforma</a>
+                <button id="logout-btn" class="nav-button-primary px-4 py-2 rounded-md font-semibold text-sm">Cerrar Sesión</button>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        <section id="inicio" class="hero-section h-[70vh] md:h-[85vh] flex items-center justify-center text-center">
+            <div class="container mx-auto px-6">
+                <h2 class="text-5xl md:text-7xl lg:text-8xl font-extrabold text-white leading-tight">Del "no sé" al "¡sí, pasé!"</h2>
+                <p class="text-white/90 text-lg md:text-xl mt-4 max-w-2xl mx-auto">La plataforma definitiva para conquistar tus pruebas de admisión.</p>
+            </div>
+        </section>
+        <section id="acerca" class="py-20 md:py-28">
+             <div class="container mx-auto px-6"><div class="grid md:grid-cols-2 gap-12 items-center"><div class="text-left"><h3 class="text-4xl md:text-5xl font-bold text-gray-900">Bienvenido a CLEA</h3><p class="text-lg text-gray-600 mt-4">Nacimos para democratizar el acceso a la educación superior de calidad. Te damos las herramientas, la confianza y el acompañamiento que necesitas para construir las bases de tu futuro profesional.</p></div><div><img src="https://images.unsplash.com/photo-1517048676732-d65bc937f952?q=80&w=2070&auto=format&fit=crop" alt="[Equipo colaborando en una reunión]" class="rounded-lg shadow-xl"></div></div></div>
+        </section>
+        <section class="bg-white py-20 md:py-28">
+            <div class="container mx-auto px-6 text-center">
+                 <h3 class="text-3xl md:text-4xl font-bold text-gray-900">¿Listo para empezar a transformar tu futuro?</h3>
+                 <p class="text-lg text-gray-600 mt-3 max-w-xl mx-auto">Crea tu cuenta gratis y accede a nuestros recursos de inmediato.</p>
+                 <button id="cta-signup-btn" class="cta-button px-8 py-4 rounded-lg font-bold text-lg mt-8">Comienza ya, es gratis</button>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white"><div class="container mx-auto px-6 py-6 text-center text-gray-400"><p>&copy; 2025 Proyecto CLEA. Todos los derechos reservados.</p></div></footer>
+
+    <!-- Modals -->
+    <div id="signup-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop">
+        <div class="bg-white rounded-lg shadow-2xl p-8 w-full max-w-md m-4 relative">
+            <button id="close-signup-modal" class="absolute top-4 right-4 text-gray-500 hover:text-black text-2xl">&times;</button>
+            <h2 class="text-2xl font-bold mb-6 text-center">Crear una Cuenta</h2>
+            <form id="signup-form"><div class="mb-4"><label for="signup-name" class="block font-semibold mb-1">Nombre Completo</label><input type="text" id="signup-name" class="w-full px-4 py-2 border rounded-md" required></div><div class="mb-4"><label for="signup-email" class="block font-semibold mb-1">Correo</label><input type="email" id="signup-email" class="w-full px-4 py-2 border rounded-md" required></div><div class="mb-6"><label for="signup-password" class="block font-semibold mb-1">Contraseña</label><input type="password" id="signup-password" class="w-full px-4 py-2 border rounded-md" required></div><button type="submit" class="form-button w-full py-3 rounded-md font-semibold">Crear Cuenta</button></form>
+            <p id="signup-error" class="text-red-500 text-sm mt-4 text-center"></p>
+        </div>
+    </div>
+    <div id="login-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop">
+        <div class="bg-white rounded-lg shadow-2xl p-8 w-full max-w-md m-4 relative">
+            <button id="close-login-modal" class="absolute top-4 right-4 text-gray-500 hover:text-black text-2xl">&times;</button>
+            <h2 class="text-2xl font-bold mb-6 text-center">Iniciar Sesión</h2>
+            <form id="login-form"><div class="mb-4"><label for="login-email" class="block font-semibold mb-1">Correo</label><input type="email" id="login-email" class="w-full px-4 py-2 border rounded-md" required></div><div class="mb-6"><label for="login-password" class="block font-semibold mb-1">Contraseña</label><input type="password" id="login-password" class="w-full px-4 py-2 border rounded-md" required></div><button type="submit" class="form-button w-full py-3 rounded-md font-semibold">Entrar</button></form>
+            <p id="login-error" class="text-red-500 text-sm mt-4 text-center"></p>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const firebaseConfig = { /* PEGA TU CONFIGURACIÓN DE FIREBASE AQUÍ */ };
+        const appId = firebaseConfig.appId || 'default-app-id';
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        const authLinks = document.getElementById('auth-links');
+        const userInfo = document.getElementById('user-info');
+        
+        onAuthStateChanged(auth, user => {
+            if (user) {
+                authLinks.classList.add('hidden');
+                userInfo.classList.remove('hidden');
+                userInfo.classList.add('flex');
+            } else {
+                authLinks.classList.remove('hidden');
+                userInfo.classList.add('hidden');
+            }
+        });
+
+        const signupModal = document.getElementById('signup-modal');
+        const loginModal = document.getElementById('login-modal');
+        [document.getElementById('signup-btn'), document.getElementById('cta-signup-btn')].forEach(btn => btn.addEventListener('click', () => signupModal.classList.remove('hidden')));
+        document.getElementById('login-btn').addEventListener('click', () => loginModal.classList.remove('hidden'));
+        document.getElementById('close-signup-modal').addEventListener('click', () => signupModal.classList.add('hidden'));
+        document.getElementById('close-login-modal').addEventListener('click', () => loginModal.classList.add('hidden');
+
+        document.getElementById('signup-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('signup-name').value;
+            const email = document.getElementById('signup-email').value;
+            const password = document.getElementById('signup-password').value;
+            const errorElement = document.getElementById('signup-error');
+            try {
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+                const userDocRef = doc(db, `artifacts/${appId}/users/${user.uid}/profile`, 'data');
+                await setDoc(userDocRef, { nombre: name, email: user.email, rol: "estudiante" });
+                window.location.href = '/app.html';
+            } catch (error) { errorElement.textContent = "Error al crear la cuenta."; }
+        });
+
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+                window.location.href = '/app.html';
+            } catch (error) { document.getElementById('login-error').textContent = "Credenciales incorrectas."; }
+        });
+        
+        document.getElementById('logout-btn').addEventListener('click', () => signOut(auth));
+    </script>
+</body>
+</html>

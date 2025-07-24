@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CLEA - Plataforma Educativa</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Poppins', sans-serif; background-color: #f9fafb; }
+        .nav-link.active { font-weight: 600; color: black; border-bottom: 2px solid black; padding-bottom: 4px; }
+        .course-card, .tutor-card { transition: transform 0.3s, box-shadow 0.3s; }
+        .course-card:hover, .tutor-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.08); }
+        .chart-container { position: relative; height: 40vh; width: 100%; max-width: 800px; margin: auto; }
+        .modal-backdrop { background-color: rgba(0, 0, 0, 0.6); }
+        .category-tag, .specialty-tag { font-size: 0.75rem; padding: 0.25rem 0.75rem; border-radius: 9999px; font-weight: 600; }
+        .category-tag { background-color: #e5e7eb; color: #4b5563; }
+        .lesson-item.active { background-color: #e5e7eb; font-weight: 600; }
+        .tab-button.active { border-bottom-color: #111827; color: #000000; font-weight: 600; }
+        .unit-header { cursor: pointer; }
+        .unit-content { max-height: 0; overflow: hidden; transition: max-height 0.5s ease-in-out; }
+        .unit-content.open { max-height: 500px; }
+        .quiz-option { border: 2px solid #e5e7eb; transition: all 0.2s; }
+        .quiz-option:hover { border-color: #9ca3af; }
+        .quiz-option.selected { border-color: #3b82f6; background-color: #eff6ff; }
+        .quiz-option.correct { border-color: #16a34a; background-color: #f0fdf4; }
+        .quiz-option.incorrect { border-color: #dc2626; background-color: #fef2f2; }
+    </style>
+</head>
+<body class="text-black">
+
+    <header class="bg-white shadow-md sticky top-0 z-40">
+        <nav class="container mx-auto px-6 py-3 flex justify-between items-center">
+            <h1 class="text-3xl font-bold text-black">CLEA</h1>
+            <div id="main-nav" class="hidden md:flex items-center space-x-8 text-sm text-gray-700">
+                <a href="#dashboard" class="nav-link active">Mis Cursos</a>
+                <a href="#progress" class="nav-link hover:text-black transition-colors">Mi Progreso</a>
+                <a href="#simulacros" class="nav-link hover:text-black transition-colors">Simulacros</a>
+                <a href="#forums" class="nav-link hover:text-black transition-colors">Foros</a>
+                <a href="#tutoring" class="nav-link hover:text-black transition-colors">Tutorías</a>
+            </div>
+            <div id="user-info" class="flex items-center space-x-4">
+                <span id="user-name" class="text-black text-sm hidden md:block"></span>
+                <button id="logout-btn" class="bg-black text-white px-4 py-2 rounded-md font-semibold text-sm hover:bg-gray-800 transition-colors">Cerrar Sesión</button>
+            </div>
+        </nav>
+    </header>
+
+    <main id="main-content" class="container mx-auto px-6 py-12"></main>
+    
+    <footer class="bg-white border-t mt-16"><div class="container mx-auto px-6 py-6 text-center text-gray-500"><p>&copy; 2025 Proyecto CLEA.</p></div></footer>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, getDocs, query, onSnapshot, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const firebaseConfig = { /* PEGA TU CONFIGURACIÓN DE FIREBASE AQUÍ */ };
+        const appId = firebaseConfig.appId || 'default-app-id';
+        
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        const userNameSpan = document.getElementById('user-name');
+        const logoutBtn = document.getElementById('logout-btn');
+        const mainContent = document.getElementById('main-content');
+        const mainNav = document.getElementById('main-nav');
+
+        let currentUser = null;
+        let currentUserName = 'Anónimo';
+        let unsubscribe;
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                currentUser = user;
+                const userDocRef = doc(db, `artifacts/${appId}/users/${user.uid}/profile`, 'data');
+                const docSnap = await getDoc(userDocRef);
+                currentUserName = docSnap.exists() ? docSnap.data().nombre : 'Usuario';
+                userNameSpan.textContent = currentUserName;
+            } else {
+                currentUser = null;
+                window.location.href = '/index.html'; // Redirect if not logged in
+            }
+            handleRouting();
+        });
+
+        logoutBtn.addEventListener('click', () => signOut(auth));
+        window.addEventListener('hashchange', handleRouting);
+        
+        function handleRouting() {
+            const hash = window.location.hash || '#dashboard';
+            const [view, params] = hash.substring(1).split('?');
+            const urlParams = new URLSearchParams(params);
+            switchView(view, urlParams);
+        }
+
+        function switchView(view, params) {
+            if (unsubscribe) unsubscribe();
+            document.querySelectorAll('.modal-backdrop').forEach(modal => modal.remove());
+            mainNav.querySelectorAll('a').forEach(link => {
+                link.classList.remove('active');
+                if (link.hash === `#${view}`) link.classList.add('active');
+            });
+
+            switch (view) {
+                case 'dashboard': renderDashboardView(); break;
+                // Add other cases here...
+                default: mainContent.innerHTML = `<div class="text-center text-gray-500 py-16">Página no encontrada.</div>`; break;
+            }
+        }
+        
+        function renderDashboardView() {
+            mainContent.innerHTML = `<div class="mb-12"><h2 class="text-4xl font-bold">Bienvenido, ${currentUserName}</h2><p class="text-lg text-gray-600 mt-2">Elige un curso para empezar.</p></div><div id="courses-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"></div>`;
+            fetchAndDisplayCourses();
+        }
+        async function fetchAndDisplayCourses() {
+            const coursesGrid = document.getElementById('courses-grid');
+            coursesGrid.innerHTML = `<div class="text-center col-span-full text-gray-500">Cargando...</div>`;
+            try {
+                const coursesRef = collection(db, `artifacts/${appId}/public/data/courses`);
+                const querySnapshot = await getDocs(coursesRef);
+                coursesGrid.innerHTML = '';
+                if (querySnapshot.empty) { coursesGrid.innerHTML = '<p class="text-center col-span-full">No hay cursos.</p>'; return; }
+                querySnapshot.forEach(doc => createCourseCard(doc.data(), doc.id));
+            } catch (error) { console.error("Error: ", error); coursesGrid.innerHTML = '<p class="text-center col-span-full text-red-500">Error al cargar.</p>'; }
+        }
+        function createCourseCard(course, courseId) {
+            const coursesGrid = document.getElementById('courses-grid');
+            const card = document.createElement('div');
+            card.className = 'course-card bg-white rounded-lg shadow-lg overflow-hidden';
+            const colors = { blue: 'bg-blue-100 text-blue-800', purple: 'bg-purple-100 text-purple-800', green: 'bg-green-100 text-green-800' };
+            card.innerHTML = `<div class="p-6"><div class="flex items-center mb-4"><div class="${colors[course.color] || 'bg-gray-100'} text-2xl p-3 rounded-full mr-4">${course.icon || '📚'}</div><h3 class="text-2xl font-bold">${course.name}</h3></div><p class="text-gray-600 mb-6">${course.description}</p><a href="#course?id=${courseId}" class="block w-full text-center bg-black text-white py-3 rounded-lg font-semibold hover:bg-gray-800">Empezar</a></div>`;
+            coursesGrid.appendChild(card);
+        }
+    </script>
+</body>
+</html>
